@@ -82,6 +82,7 @@ public class TargetHandler extends ReadTimeoutHandler {
             ringBuffer.publishEvent(new CarbonEventPublisher(cMsg));
         } else {
             if (cMsg != null) {
+
                 if (msg instanceof LastHttpContent) {
                     NettyTransportContextHolder.getInstance().getInterceptor()
                             .engage(cMsg, EngagedLocation.SERVER_RESPONSE_READ_BODY_COMPLETED);

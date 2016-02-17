@@ -129,7 +129,14 @@ public class ClientRequestWorker implements Runnable {
             targetChannel.getTargetHandler().setTargetChannel(targetChannel);
             targetChannel.getTargetHandler().setConnectionManager(connectionManager);
 
+            NettyTransportContextHolder.getInstance().getInterceptor()
+                    .engage(carbonMessage, EngagedLocation.SERVER_REQUEST_WRITE_INITIATED);
+            NettyTransportContextHolder.getInstance().getInterceptor()
+                    .engage(carbonMessage, EngagedLocation.SERVER_REQUEST_WRITE_HEADERS_COMPLETED);
             boolean written = ChannelUtils.writeContent(channel, httpRequest, carbonMessage);
+            NettyTransportContextHolder.getInstance().getInterceptor()
+                    .engage(carbonMessage, EngagedLocation.SERVER_REQUEST_WRITE_BODY_COMPLETED);
+
             if (written) {
                 targetChannel.setRequestWritten(true);
             }
