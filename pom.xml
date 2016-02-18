@@ -133,6 +133,11 @@
                 <artifactId>org.wso2.carbon.transport.http.netty.statistics</artifactId>
                 <version>${carbon.transport.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.transport</groupId>
+                <artifactId>org.wso2.carbon.transport.http.netty.logger</artifactId>
+                <version>${carbon.transport.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

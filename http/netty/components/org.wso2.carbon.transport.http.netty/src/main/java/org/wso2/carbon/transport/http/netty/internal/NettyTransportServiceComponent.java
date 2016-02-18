@@ -121,6 +121,21 @@ public class NettyTransportServiceComponent implements RequiredCapabilityListene
         NettyTransportContextHolder.getInstance().getInterceptor().removeHandler(messagingHandler);
     }
 
+    @Reference(
+            name = "netty-log-handler",
+            service = MessagingHandler.class,
+            cardinality = ReferenceCardinality.OPTIONAL,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "removeNettyLogHandler"
+    )
+    protected void addNettyLogHandler(MessagingHandler messagingHandler) {
+        NettyTransportContextHolder.getInstance().getInterceptor().addHandler(messagingHandler);
+    }
+
+    protected void removeNettyLogHandler(MessagingHandler messagingHandler) {
+        NettyTransportContextHolder.getInstance().getInterceptor().removeHandler(messagingHandler);
+    }
+
     @Override
     public void onAllRequiredCapabilitiesAvailable() {
         NettyTransportContextHolder.getInstance().getBundleContext().
