@@ -156,6 +156,10 @@ public class ServerConnectorBootstrap {
         httpServerChannelInitializer.setHttpTraceLogEnabled(isHttpTraceLogEnabled);
     }
 
+    public void addChunkedWriteHandler(boolean isChunkedDisabled) {
+        httpServerChannelInitializer.setChunkingDisabled(isChunkedDisabled);
+    }
+
     class HTTPServerConnector implements ServerConnector {
 
        private final Logger log = LoggerFactory.getLogger(HTTPServerConnector.class);

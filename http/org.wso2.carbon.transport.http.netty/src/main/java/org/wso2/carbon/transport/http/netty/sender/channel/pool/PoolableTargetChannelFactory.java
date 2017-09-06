@@ -39,15 +39,17 @@ public class PoolableTargetChannelFactory implements PoolableObjectFactory {
     private HttpRoute httpRoute;
     private SSLConfig sslConfig;
     private boolean httpTraceLogEnabled;
+    private boolean isChunkedDisabled;
 
     public PoolableTargetChannelFactory(HttpRoute httpRoute, EventLoopGroup eventLoopGroup,
                                         Class eventLoopClass, SSLConfig sslConfig,
-                                        boolean httpTraceLogEnabled) {
+                                        boolean httpTraceLogEnabled, boolean isChunkedDisabled) {
         this.eventLoopGroup = eventLoopGroup;
         this.eventLoopClass = eventLoopClass;
         this.httpRoute = httpRoute;
         this.sslConfig = sslConfig;
         this.httpTraceLogEnabled = httpTraceLogEnabled;
+        this.isChunkedDisabled = isChunkedDisabled;
     }
 
 
@@ -57,7 +59,7 @@ public class PoolableTargetChannelFactory implements PoolableObjectFactory {
         ChannelFuture channelFuture = ChannelUtils.getNewChannelFuture(targetChannel,
                                                                        eventLoopGroup, eventLoopClass, httpRoute,
                                                                        this.sslConfig,
-                                                                       httpTraceLogEnabled);
+                                                                       httpTraceLogEnabled, isChunkedDisabled);
         Channel channel = ChannelUtils.openChannel(channelFuture, httpRoute);
         log.debug("Created channel: {}", channel);
         targetChannel.setChannel(channel);

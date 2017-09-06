@@ -13,14 +13,19 @@ import java.util.List;
  */
 public class CustomHttpContentCompressor extends HttpContentCompressor {
 
+    private final boolean isChunkingDisabled;
     private HttpMethod method;
 
-    public CustomHttpContentCompressor() {
+    public CustomHttpContentCompressor(boolean isChunkingDisabled) {
         super();
+        this.isChunkingDisabled = isChunkingDisabled;
     }
 
     @Override
     protected Result beginEncode(HttpResponse headers, String acceptEncoding) throws Exception {
+        if (isChunkingDisabled) {
+            return null;
+        }
         String allowHeader = headers.headers().get("Allow");
         String contentLength = headers.headers().get("Content-Length");
         if (method == HttpMethod.OPTIONS && allowHeader != null && contentLength.equals("0")) {

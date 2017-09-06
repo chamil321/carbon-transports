@@ -51,6 +51,7 @@ public class HTTPServerChannelInitializer extends ChannelInitializer<SocketChann
     private int socketIdleTimeout;
     private boolean httpTraceLogEnabled;
     private String interfaceId;
+    private boolean isChunkingDisabled;
 
     @Override
     public void setup(Map<String, String> parameters) {
@@ -104,8 +105,10 @@ public class HTTPServerChannelInitializer extends ChannelInitializer<SocketChann
         if (RequestSizeValidationConfiguration.getInstance().isRequestSizeValidation()) {
             pipeline.addLast("custom-aggregator", new CustomHttpObjectAggregator());
         }
-        pipeline.addLast("compressor", new CustomHttpContentCompressor());
-        pipeline.addLast("chunkWriter", new ChunkedWriteHandler());
+        pipeline.addLast("compressor", new CustomHttpContentCompressor(isChunkingDisabled));
+        if (!isChunkingDisabled) {
+            pipeline.addLast("chunkWriter", new ChunkedWriteHandler());
+        }
 
         if (httpTraceLogEnabled) {
             pipeline.addLast(Constants.HTTP_TRACE_LOG_HANDLER,
@@ -151,5 +154,9 @@ public class HTTPServerChannelInitializer extends ChannelInitializer<SocketChann
 
     public void setSslConfig(SSLConfig sslConfig) {
         this.sslConfig = sslConfig;
+    }
+
+    public void setChunkingDisabled(boolean isChunkingDisabled) {
+        this.isChunkingDisabled = isChunkingDisabled;
     }
 }
