@@ -79,7 +79,7 @@ public class ChannelUtils {
 
         HTTPClientInitializer httpClientInitializer = new HTTPClientInitializer(sslEngine, httpTraceLogEnabled
                 , isChunkedDisabled);
-        targetChannel.setHTTPClientInitializer(httpClientInitializer);
+        //targetChannel.setHTTPClientInitializer(httpClientInitializer);
         clientBootstrap.handler(httpClientInitializer);
         if (log.isDebugEnabled()) {
             log.debug("Created new TCP client bootstrap connecting to {}:{} with options: {}", httpRoute.getHost(),
