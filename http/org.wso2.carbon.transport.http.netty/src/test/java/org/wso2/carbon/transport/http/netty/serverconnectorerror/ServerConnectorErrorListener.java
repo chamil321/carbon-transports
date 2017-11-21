@@ -22,7 +22,6 @@ package org.wso2.carbon.transport.http.netty.serverconnectorerror;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.transport.http.netty.config.TransportsConfiguration;
-import org.wso2.carbon.transport.http.netty.contract.HttpClientConnector;
 import org.wso2.carbon.transport.http.netty.contract.HttpConnectorListener;
 import org.wso2.carbon.transport.http.netty.contract.ServerConnectorException;
 import org.wso2.carbon.transport.http.netty.contractimpl.HttpResponseStatusFuture;
@@ -32,19 +31,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * A Message Processor class to be used for test pass through scenarios
+ * HTTP connector listener to be used for test server connector error scenarios
  */
-public class ServerConnectorListener implements HttpConnectorListener {
+public class ServerConnectorErrorListener implements HttpConnectorListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(ServerConnectorListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServerConnectorErrorListener.class);
     private ExecutorService executor = Executors.newSingleThreadExecutor();
     private TransportsConfiguration configuration;
-    private HttpClientConnector clientConnector;
     private HttpResponseStatusFuture statusFuture;
-    private boolean isDone = false;
     private Throwable status;
 
-    public ServerConnectorListener(TransportsConfiguration configuration) {
+    public ServerConnectorErrorListener(TransportsConfiguration configuration) {
         this.configuration = configuration;
     }
 
@@ -53,11 +50,12 @@ public class ServerConnectorListener implements HttpConnectorListener {
         executor.execute(() -> {
             HTTPCarbonMessage responseMsg = httpRequestMessage.cloneCarbonMessageWithData();
             try {
-                Thread.sleep(100);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 logger.error("Thread Interrupted while sleeping ", e);
             }
             if (status == null) {
+                responseMsg.setHeader("status", "no error");
                 try {
                     statusFuture = httpRequestMessage.respond(responseMsg);
                     statusFuture = statusFuture.sync();
@@ -67,9 +65,8 @@ public class ServerConnectorListener implements HttpConnectorListener {
                 } catch (InterruptedException e) {
                     logger.error("Thread Interrupted while sleeping ", e);
                 }
-                isDone = true;
             } else {
-                responseMsg.setProperty("Error", status != null ? status.getMessage(): "No error");
+                responseMsg.setHeader("status", status.toString());
                 try {
                     httpRequestMessage.respond(responseMsg);
                 } catch (ServerConnectorException e) {

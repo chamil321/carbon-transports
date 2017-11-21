@@ -49,7 +49,7 @@ public class ServerConnectorErrorTestCase {
     public void setUp() {
         TransportsConfiguration configuration = YAMLTransportConfigurationBuilder
                 .build("src/test/resources/simple-test-config/netty-transports.yml");
-        serverConnectors = TestUtil.startConnectors(configuration, new ServerConnectorListener(configuration));
+        serverConnectors = TestUtil.startConnectors(configuration, new ServerConnectorErrorListener(configuration));
     }
 
     @Test
@@ -60,8 +60,7 @@ public class ServerConnectorErrorTestCase {
             client.createAndSendRequest();
             //Second request
             HttpURLConnection urlConn = TestUtil.request(baseURI, "/", HttpMethod.POST.name(), true);
-            String content = TestUtil.getContent(urlConn);
-            assertEquals("No error", content);
+            assertEquals("java.nio.channels.ClosedChannelException", urlConn.getHeaderField("status"));
             urlConn.disconnect();
         } catch (IOException e) {
             TestUtil.handleException("IOException occurred while running ServerConnectorError Test", e);

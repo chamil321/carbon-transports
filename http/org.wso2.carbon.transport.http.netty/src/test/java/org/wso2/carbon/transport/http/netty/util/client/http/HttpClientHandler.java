@@ -10,11 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Test client handler for netty Http client.
+ * Test client request handler for netty Http client.
  */
-public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
+public class HttpClientHandler extends ChannelInboundHandlerAdapter {
 
-    private static final Logger logger = LoggerFactory.getLogger(HttpRequestHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(HttpClientHandler.class);
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
@@ -36,7 +36,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
         logger.error("Error occurred during message processing: ", cause);
         ctx.close();
     }

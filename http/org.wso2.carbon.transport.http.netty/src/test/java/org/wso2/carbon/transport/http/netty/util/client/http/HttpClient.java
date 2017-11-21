@@ -4,44 +4,43 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpVersion;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.nio.ByteBuffer;
 
 /**
- * Test HTTP netty client which close the connection once the request is sent.
+ * Test HTTP netty client which close the connection once the request is delivered.
  */
 public class HttpClient {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpClient.class);
-    private final String host;
     private final int port;
-    private final String rawPath;
-    private final String path;
-    private final String method;
+    private final String host, uri;
+    private final HttpMethod method;
     private String stringContent = "Hello world";
 
     public HttpClient(URI baseURI, String path, String method) {
         this.host = baseURI.getHost();
         this.port = baseURI.getPort();
-        this.rawPath = baseURI.getRawPath();
-        this.path = path;
-        this.method = method;
+        this.uri = path;
+        this.method = new HttpMethod(method);
     }
 
     public void createAndSendRequest() {
@@ -60,33 +59,26 @@ public class HttpClient {
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(new HttpServerCodec());
-                            ch.pipeline().addLast(new HttpRequestHandler());
+                            ch.pipeline().addLast(new HttpClientCodec());
+                            ch.pipeline().addLast(new HttpClientHandler());
                         }
                     });
-
-            // Make the connection attempt.
             Channel ch = b.connect(host, port).sync().channel();
 
-            // Prepare the HTTP request.
-            HttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/", content);
+            HttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, method, uri, content);
             request.headers().set(HttpHeaderNames.HOST, host);
-//            request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
-//            request.headers().set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
 
-            // Send the HTTP request.
-            ch.writeAndFlush(request);
-
-            // Wait for the server to close the connection.
-//            ch.closeFuture().sync();
-            ch.close();
+            ChannelFuture future = ch.writeAndFlush(request);
+            future.addListener(new GenericFutureListener<Future<? super Void>>() {
+                @Override
+                public void operationComplete(Future<? super Void> future) throws Exception {
+                    ch.close();
+                }
+            });
         } catch (InterruptedException e) {
             logger.error("Error occurred during message processing: ", e);
         } finally {
-            // Shut down executor threads to exit.
             group.shutdownGracefully();
         }
     }
-
-
 }
